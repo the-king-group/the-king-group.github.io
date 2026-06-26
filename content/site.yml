@@ -11,10 +11,6 @@ tagline: >
   responsive, and can correct their own errors. We emphasize both fundamental
   science and applications to biology and sustainability.
 
-# Section + button labels on the homepage
-work_heading: What we work on
-callout: Come join us!
-
 # Contact
 email: ella.king@northwestern.edu
 address: 2145 Sheridan Rd, Evanston, IL 60208
@@ -42,3 +38,15 @@ programs:
     url: https://www.mccormick.northwestern.edu/materials-science/academics/graduate/phd/
   - name: Applied Physics
     url: https://appliedphysics.northwestern.edu/
+
+# ── Publications auto-sync (Google Scholar via SerpApi) ──────────────
+# The GitHub Action uses this Scholar author id to refresh the
+# publication list. See UPDATING.md for the one-time key setup.
+scholar_id: tMOOznMAAAAJ
+recent_count: 4          # how many recent papers show on the Research page
+# Names to bold in author lists (covers both Scholar's "EM King" style
+# and the hand-written "King, E. M." style).
+author_highlight:
+  - "King, E. M."
+  - "EM King"
+  - "E King"

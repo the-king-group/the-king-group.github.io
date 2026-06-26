@@ -35,6 +35,13 @@ PAGES = [("index.html","Home"),("research.html","Research"),
 def esc(s):      return html.escape(str(s))
 def escurl(u):   return html.escape(str(u), quote=True)
 
+def highlight_authors(s):
+    s = esc(s)
+    for name in SITE.get("author_highlight", ["King, E. M."]):
+        e = esc(name)
+        s = s.replace(e, f'<span class="me">{e}</span>')
+    return s
+
 FONTS = ('<link rel="preconnect" href="https://fonts.googleapis.com">'
          '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>'
          '<link href="https://fonts.googleapis.com/css2?'
@@ -152,19 +159,6 @@ def build_home():
       aria-label="Particles assembling from disorder into an ordered lattice"></canvas>
   </div>
 </div></div></section>
-
-<section class="section"><div class="wrap">
-  <div class="figure-wrap">
-    <img src="assets/img/error-correcting-materials.png" width="1100" height="1100"
-      alt="Error-correcting materials: robustness to noise, stimulated healing, and self-healing">
-  </div>
-</div></section>
-
-<section class="section"><div class="wrap">
-  <a class="callout-btn" href="join.html">
-    <h2>{esc(SITE['callout'])}</h2><span class="arr">&rarr;</span>
-  </a>
-</div></section>
 """
     page("index.html", f"{SITE['brand']} · {SITE['institution']}",
          SITE['tagline'], "Home", body)
@@ -172,20 +166,31 @@ def build_home():
 # ---------------------------------------------------------------- RESEARCH
 def build_research():
     meta, prose = load_md("research.md")
-    hl = load_yaml("highlights.yml")
-    items = "\n".join(
-        f'    <a class="hl-item" href="{escurl(h["url"])}"><span class="yr"></span>'
-        f'<span><h4>{esc(h["title"])}</h4><p>{esc(h["desc"].strip())}</p></span></a>'
-        for h in hl)
+    pubs = load_yaml("publications.yml")
+    recent = pubs[:int(SITE.get("recent_count", 4))]
+    cards = []
+    for p in recent:
+        yr = esc(p.get("year", ""))
+        title = esc(p["title"])
+        venue = venue_html(p["venue"]) if p.get("venue") else ""
+        inner = (f'<span class="yr">{yr}</span>'
+                 f'<span><h4>{title}</h4><p>{venue}</p></span>')
+        link = p.get("link")
+        if link:
+            cards.append(f'    <a class="hl-item" href="{escurl(link)}">{inner}</a>')
+        else:
+            cards.append(f'    <div class="hl-item">{inner}</div>')
+    items = "\n".join(cards)
     body = f"""
 <section class="page-head"><div class="wrap"><h1>{esc(meta['title'])}</h1></div></section>
 
-<section class="section tight"><div class="wrap"><div class="prose">{prose}</div></div></section>
-
 <section class="section tight"><div class="wrap">
-  <div class="figure-wrap">
-    <img src="assets/img/error-correcting-materials.png" width="1100" height="1100"
-      alt="Error-correcting materials: robustness to noise, stimulated healing, and self-healing">
+  <div class="research-split">
+    <div class="prose">{prose}</div>
+    <div class="figure-wrap">
+      <img src="assets/img/error-correcting-materials.png" width="1100" height="1100"
+        alt="Error-correcting materials: robustness to noise, stimulated healing, and self-healing">
+    </div>
   </div>
 </div></section>
 
@@ -212,8 +217,7 @@ def build_publications():
     pubs = load_yaml("publications.yml")
     rows = []
     for p in pubs:
-        authors = esc(p["authors"]).replace("King, E. M.",
-                    '<span class="me">King, E. M.</span>')
+        authors = highlight_authors(p["authors"])
         link = p.get("link")
         if link:
             title_el = f'<a class="pub-title" href="{escurl(link)}">{esc(p["title"])}</a>'
