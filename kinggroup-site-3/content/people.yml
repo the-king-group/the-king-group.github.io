@@ -1,0 +1,19 @@
+pi:
+  name: Ella King
+  label: Principal Investigator
+  photo: assets/img/ella-king.jpg
+  links:
+    - name: Faculty profile
+      url: https://www.mccormick.northwestern.edu/research-faculty/directory/profiles/king-ella.html
+    - name: Personal website
+      url: https://ellaking.org/
+    - name: Google Scholar
+      url: https://scholar.google.com/citations?user=tMOOznMAAAAJ&hl=en
+    - name: Curriculum vitae
+      url: assets/king-cv-2026.pdf
+
+members:
+  - name: Katherine Ellis
+    role: Graduate Student in Chemical & Biological Engineering
+    email: KatherineEllis2030@u.northwestern.edu
+    photo: assets/img/kate-ellis.jpg
