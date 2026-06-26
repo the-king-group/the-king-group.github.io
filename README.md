@@ -5,7 +5,8 @@ Static website for the King Group, Northwestern University. Content lives in
 
 - `content/` — everything editable (see `UPDATING.md`)
 - `assets/` — CSS, JS, images, CV
-- `build.py` — generates the site into `public/`
+- `build.py` — regenerates the pages at the repo root
+- `*.html` — generated pages (rebuilt by `build.py`)
 - `.github/workflows/deploy.yml` — builds and deploys to GitHub Pages on push
 
 ## Deploying

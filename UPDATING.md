@@ -57,5 +57,5 @@ If you have Python installed:
 pip install pyyaml markdown
 python build.py
 ```
-Then open `public/index.html` in a browser. (`public/` is generated; you never
-edit it by hand and it isn't committed to the repo.)
+Then open `index.html` in a browser. (The `.html` files are generated from
+`content/`; run `python build.py` again after editing content.)

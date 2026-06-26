@@ -9,7 +9,7 @@ import os, re, html, shutil, yaml, markdown
 ROOT    = os.path.dirname(os.path.abspath(__file__))
 CONTENT = os.path.join(ROOT, "content")
 ASSETS  = os.path.join(ROOT, "assets")
-OUT     = os.path.join(ROOT, "public")
+OUT     = ROOT          # finished pages are written at the top level
 
 def load_yaml(name):
     with open(os.path.join(CONTENT, name)) as fh:
@@ -51,11 +51,17 @@ def affiliations_html():
             parts.append(esc(a["text"]))
     return ", ".join(parts)
 
-def departments_inline():
-    return " &middot; ".join(esc(d) for d in SITE["departments"])
-
-def departments_lines():
-    return "<br>".join(esc(d) for d in SITE["departments"])
+def _dept_name(d): return d["name"] if isinstance(d, dict) else d
+def _dept_url(d):  return d.get("url") if isinstance(d, dict) else None
+def dept_link(d):
+    n = esc(_dept_name(d)); u = _dept_url(d)
+    return f'<a href="{escurl(u)}">{n}</a>' if u else n
+def departments_links_inline(sep=" &middot; "):
+    return sep.join(dept_link(d) for d in SITE["departments"])
+def departments_links_lines():
+    return "<br>".join(dept_link(d) for d in SITE["departments"])
+def departments_names_inline(sep=" &middot; "):
+    return sep.join(esc(_dept_name(d)) for d in SITE["departments"])
 
 def navlinks(active):
     out = []
@@ -114,7 +120,7 @@ def footer():
   </div>
 </div>
 <div class="colophon">
-  <span>{esc(SITE['institution'])} &middot; {departments_inline()}</span>
+  <span>{esc(SITE['institution'])} &middot; {departments_names_inline()}</span>
   <span>&copy; 2026 {esc(SITE['brand'])}</span>
 </div>
 </div></footer>
@@ -138,10 +144,8 @@ def build_home():
       <a class="btn" href="research.html">Research <span class="arr">&rarr;</span></a>
       <a class="btn ghost" href="join.html">Join us</a>
     </div>
-    <p class="affil" style="margin-top:1.8rem">
-      {departments_inline()}<br>
-      Affiliated with: {affiliations_html()}
-    </p>
+    <p class="hero-depts">{departments_links_inline()}</p>
+    <p class="affil">Affiliated with: {affiliations_html()}</p>
   </div>
   <div class="lattice-wrap">
     <canvas id="lattice" role="img"
@@ -150,7 +154,6 @@ def build_home():
 </div></div></section>
 
 <section class="section"><div class="wrap">
-  <div class="section-head"><h2>{esc(SITE['work_heading'])}</h2></div>
   <div class="figure-wrap">
     <img src="assets/img/error-correcting-materials.png" width="1100" height="1100"
       alt="Error-correcting materials: robustness to noise, stimulated healing, and self-healing">
@@ -281,7 +284,7 @@ def build_people():
     <div class="pi-body">
       <p class="eyebrow">{esc(pi['label'])}</p>
       <h2>{esc(pi['name'])}</h2>
-      <p class="pi-depts">{departments_lines()}</p>
+      <p class="pi-depts">{departments_links_lines()}</p>
       <p class="pi-affil">Affiliated with: {affiliations_html()}</p>
       <p class="pi-meta">
         <strong>Email:</strong>
@@ -388,17 +391,9 @@ def build_404():
 
 # ---------------------------------------------------------------- BUILD
 def main():
-    if os.path.exists(OUT):
-        shutil.rmtree(OUT)
-    os.makedirs(OUT)
-    shutil.copytree(ASSETS, os.path.join(OUT, "assets"))
-    for f in (".nojekyll", "favicon.ico"):
-        src = os.path.join(ROOT, f)
-        if os.path.exists(src):
-            shutil.copy(src, os.path.join(OUT, f))
     build_home(); build_research(); build_publications()
     build_people(); build_news(); build_join(); build_404()
-    print("Built site into public/:", ", ".join(f for f, _ in PAGES), "+ 404.html")
+    print("Built pages at repo root:", ", ".join(f for f, _ in PAGES), "+ 404.html")
 
 if __name__ == "__main__":
     main()
