@@ -1,17 +1,39 @@
 #!/usr/bin/env python3
-"""Static-site generator for the King Group website."""
-import os, html
+"""Build the King Group website from the Markdown/YAML files in content/.
 
-OUT = "/home/claude/site"
-SCHOLAR = "https://scholar.google.com/citations?user=tMOOznMAAAAJ&amp;hl=en"
-PAGES = [
-    ("index.html",        "Home"),
-    ("research.html",     "Research"),
-    ("publications.html", "Publications"),
-    ("people.html",       "People"),
-    ("news.html",         "News"),
-    ("join.html",         "Join"),
-]
+Usage:  python3 build.py        # writes the finished site into public/
+Edit the files in content/ to change the site, then run this script.
+"""
+import os, re, html, shutil, yaml, markdown
+
+ROOT    = os.path.dirname(os.path.abspath(__file__))
+CONTENT = os.path.join(ROOT, "content")
+ASSETS  = os.path.join(ROOT, "assets")
+OUT     = os.path.join(ROOT, "public")
+
+def load_yaml(name):
+    with open(os.path.join(CONTENT, name)) as fh:
+        return yaml.safe_load(fh)
+
+def load_md(name):
+    """Return (frontmatter dict, html body) for a Markdown file."""
+    with open(os.path.join(CONTENT, name)) as fh:
+        text = fh.read()
+    meta = {}
+    if text.startswith("---"):
+        _, fm, body = text.split("---", 2)
+        meta = yaml.safe_load(fm) or {}
+    else:
+        body = text
+    return meta, markdown.markdown(body.strip())
+
+SITE = load_yaml("site.yml")
+PAGES = [("index.html","Home"),("research.html","Research"),
+         ("publications.html","Publications"),("people.html","People"),
+         ("news.html","News"),("join.html","Join")]
+
+def esc(s):      return html.escape(str(s))
+def escurl(u):   return html.escape(str(u), quote=True)
 
 FONTS = ('<link rel="preconnect" href="https://fonts.googleapis.com">'
          '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>'
@@ -19,6 +41,21 @@ FONTS = ('<link rel="preconnect" href="https://fonts.googleapis.com">'
          'family=Fraunces:ital,opsz,wght@0,9..144,400..600;1,9..144,400..500&'
          'family=Hanken+Grotesk:wght@400;500;600;700&'
          'family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">')
+
+def affiliations_html():
+    parts = []
+    for a in SITE["affiliations"]:
+        if a.get("url"):
+            parts.append(f'<a href="{escurl(a["url"])}">{esc(a["text"])}</a>')
+        else:
+            parts.append(esc(a["text"]))
+    return ", ".join(parts)
+
+def departments_inline():
+    return " &middot; ".join(esc(d) for d in SITE["departments"])
+
+def departments_lines():
+    return "<br>".join(esc(d) for d in SITE["departments"])
 
 def navlinks(active):
     out = []
@@ -33,8 +70,8 @@ def head(title, desc, active):
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>{title}</title>
-<meta name="description" content="{html.escape(desc)}">
+<title>{esc(title)}</title>
+<meta name="description" content="{esc(desc)}">
 {FONTS}
 <link rel="stylesheet" href="assets/css/style.css">
 <link rel="icon" href="favicon.ico" sizes="any">
@@ -44,7 +81,7 @@ def head(title, desc, active):
 <body>
 <a class="skip" href="#main">Skip to content</a>
 <nav class="nav"><div class="nav-in">
-  <a class="brand" href="index.html"><img class="brand-mark" src="assets/img/ek-logo.png" alt="">King Group</a>
+  <a class="brand" href="index.html"><img class="brand-mark" src="assets/img/ek-logo.png" alt="">{esc(SITE['brand'])}</a>
   <button class="nav-toggle" aria-expanded="false" aria-controls="navlinks">menu</button>
   <ul class="nav-links" id="navlinks">
 {navlinks(active)}
@@ -53,12 +90,12 @@ def head(title, desc, active):
 <main id="main">
 """
 
-FOOTER = f"""</main>
+def footer():
+    return f"""</main>
 <footer class="footer"><div class="wrap"><div class="footer-in">
   <div>
-    <div class="brand"><img class="brand-mark" src="assets/img/ek-logo.png" alt="">King Group</div>
-    <p>The King group works to understand and design materials that are
-       dynamic, responsive, and can correct their own errors.</p>
+    <div class="brand"><img class="brand-mark" src="assets/img/ek-logo.png" alt="">{esc(SITE['brand'])}</div>
+    <p>{esc(SITE['tagline'].split('.')[0])}.</p>
   </div>
   <div class="fcol">
     <h4>Pages</h4>
@@ -70,15 +107,15 @@ FOOTER = f"""</main>
   </div>
   <div class="fcol">
     <h4>Contact</h4>
-    <a href="mailto:ella.king@northwestern.edu">ella.king@northwestern.edu</a>
-    <a href="https://www.mccormick.northwestern.edu/research-faculty/directory/profiles/king-ella.html">Northwestern profile</a>
-    <a href="{SCHOLAR}">Google Scholar</a>
-    <p style="margin-top:.6rem">2145 Sheridan Rd<br>Evanston, IL 60208</p>
+    <a href="mailto:{esc(SITE['email'])}">{esc(SITE['email'])}</a>
+    <a href="{escurl(SITE['faculty_profile'])}">Northwestern profile</a>
+    <a href="{escurl(SITE['scholar'])}">Google Scholar</a>
+    <p style="margin-top:.6rem">{esc(SITE['address']).replace(', ', ',<br>', 1)}</p>
   </div>
 </div>
 <div class="colophon">
-  <span>Northwestern University &middot; Chemical &amp; Biological Engineering &middot; Materials Science &amp; Engineering</span>
-  <span>&copy; 2026 King Group</span>
+  <span>{esc(SITE['institution'])} &middot; {departments_inline()}</span>
+  <span>&copy; 2026 {esc(SITE['brand'])}</span>
 </div>
 </div></footer>
 <script src="assets/js/site.js"></script>
@@ -87,24 +124,23 @@ FOOTER = f"""</main>
 
 def page(fname, title, desc, active, body):
     with open(os.path.join(OUT, fname), "w") as fh:
-        fh.write(head(title, desc, active) + body + FOOTER)
+        fh.write(head(title, desc, active) + body + footer())
 
 # ---------------------------------------------------------------- HOME
-home = """
+def build_home():
+    body = f"""
 <section class="hero"><div class="wrap"><div class="hero-grid">
   <div class="hero-copy">
-    <p class="eyebrow">King Group &middot; Northwestern University</p>
-    <h1>Error&#8209;correcting materials</h1>
-    <p class="lead">The King group works to understand and design materials that
-      are dynamic, responsive, and can correct their own errors. We emphasize both
-      fundamental science and applications to biology and sustainability.</p>
+    <p class="eyebrow">{esc(SITE['brand'])} &middot; {esc(SITE['institution'])}</p>
+    <h1>{esc(SITE['headline'])}</h1>
+    <p class="lead">{esc(SITE['tagline'])}</p>
     <div class="btn-row">
       <a class="btn" href="research.html">Research <span class="arr">&rarr;</span></a>
       <a class="btn ghost" href="join.html">Join us</a>
     </div>
     <p class="affil" style="margin-top:1.8rem">
-      Chemical &amp; Biological Engineering &middot; Materials Science &amp; Engineering<br>
-      Affiliated with: Applied Physics Graduate Program, NITMB
+      {departments_inline()}<br>
+      Affiliated with: {affiliations_html()}
     </p>
   </div>
   <div class="lattice-wrap">
@@ -114,213 +150,146 @@ home = """
 </div></div></section>
 
 <section class="section"><div class="wrap">
-  <div class="section-head"><h2>What we work on</h2></div>
+  <div class="section-head"><h2>{esc(SITE['work_heading'])}</h2></div>
   <div class="figure-wrap">
-    <img src="assets/img/error-correcting-materials.jpg" width="1100" height="1099"
+    <img src="assets/img/error-correcting-materials.png" width="1100" height="1100"
       alt="Error-correcting materials: robustness to noise, stimulated healing, and self-healing">
   </div>
 </div></section>
 
 <section class="section"><div class="wrap">
-  <div class="callout">
-    <div><h2>Come join us!</h2></div>
-    <div><a class="btn" href="join.html">Join us <span class="arr">&rarr;</span></a></div>
-  </div>
+  <a class="callout-btn" href="join.html">
+    <h2>{esc(SITE['callout'])}</h2><span class="arr">&rarr;</span>
+  </a>
 </div></section>
 """
-page("index.html", "King Group · Northwestern University",
-     "The King group at Northwestern works to understand and design materials that "
-     "are dynamic, responsive, and can correct their own errors.", "Home", home)
+    page("index.html", f"{SITE['brand']} · {SITE['institution']}",
+         SITE['tagline'], "Home", body)
 
 # ---------------------------------------------------------------- RESEARCH
-highlights = [
-    ("Programmable patchy particles for materials design",
-     "Computational design of anisotropic particle shapes that stabilize complex "
-     "open lattices and enable self-limited assembly using automatic differentiation.",
-     "https://www.pnas.org/doi/full/10.1073/pnas.2311891121"),
-    ("Tuning colloidal reactions",
-     "Control over complex colloidal reactions with inverse designed components. "
-     "Controlled disassembly of virus-like shells and, inspired by drug delivery "
-     "applications, induced release of small particles trapped inside.",
-     "https://journals.aps.org/prl/abstract/10.1103/PhysRevLett.133.228201"),
-    ("Inferring interaction potentials from stochastic particle trajectories",
-     "Novel method for extracting interactions from particle trajectories in and "
-     "out of equilibrium. Validated on experimental colloidal data interacting via "
-     "depletion forces.",
-     "https://journals.aps.org/prresearch/abstract/10.1103/PhysRevResearch.7.023075"),
-    ("Scattered waves fuel emergent activity",
-     "Nonreciprocal wave-mediated interactions reveal a new form of activity that "
-     "emerges as a collective property of the system.",
-     "https://journals.aps.org/prresearch/abstract/10.1103/PhysRevResearch.7.013055"),
-    ("Designing self-assembling kinetics with differentiable statistical physics models",
-     "Inverse design of kinetic properties of self-assembled structures, including "
-     "transition rates between small clusters and bulk crystallization rates.",
-     "https://www.pnas.org/doi/abs/10.1073/pnas.2024083118"),
-]
-hl_html = "\n".join(
-    f'    <a class="hl-item" href="{u}"><span class="yr"></span>'
-    f'<span><h4>{html.escape(t)}</h4><p>{html.escape(d)}</p></span></a>'
-    for t, d, u in highlights)
+def build_research():
+    meta, prose = load_md("research.md")
+    hl = load_yaml("highlights.yml")
+    items = "\n".join(
+        f'    <a class="hl-item" href="{escurl(h["url"])}"><span class="yr"></span>'
+        f'<span><h4>{esc(h["title"])}</h4><p>{esc(h["desc"].strip())}</p></span></a>'
+        for h in hl)
+    body = f"""
+<section class="page-head"><div class="wrap"><h1>{esc(meta['title'])}</h1></div></section>
 
-research = f"""
-<section class="page-head"><div class="wrap">
-  <h1>Research</h1>
+<section class="section tight"><div class="wrap"><div class="prose">{prose}</div></div></section>
+
+<section class="section tight"><div class="wrap">
+  <div class="figure-wrap">
+    <img src="assets/img/error-correcting-materials.png" width="1100" height="1100"
+      alt="Error-correcting materials: robustness to noise, stimulated healing, and self-healing">
+  </div>
 </div></section>
-
-<section class="section tight"><div class="wrap"><div class="prose">
-  <p>The King group works to understand and design materials that are dynamic,
-     responsive, and can correct their own errors. Unlike human-made materials,
-     biological systems are strikingly robust to errors in the face of dynamic,
-     out-of-equilibrium environments. Living matter corrects errors across six
-     orders of magnitude: nanometer-scale kinetic proofreading achieves
-     exponentially lower error rates in DNA replication than can be reached at
-     equilibrium, and millimeter-scale vasculature rapidly remodels in response to
-     changes in blood flow. Because many biological systems are capable of robust
-     error correction, it should be possible to design synthetic materials with
-     similar functions.</p>
-  <p>Error-correcting materials would revolutionize modern technologies, ranging
-     from artificial joints that could be revitalized with error-correcting
-     synthetic enzymes to last a lifetime instead of just a decade, to phone screens
-     that repair themselves while recharging overnight. Creating these materials
-     will require both fundamental discoveries in the physical and biological laws
-     that govern these complex, dynamic interactions and innovations in computational
-     and inverse design methods. So how do we design error-correcting materials
-     without the luxury of billions of years of evolution?</p>
-</div></div></section>
 
 <section class="section"><div class="wrap">
   <div class="section-head"><h2>Recent publications</h2></div>
   <div class="hl">
-{hl_html}
+{items}
   </div>
   <p class="legend" style="margin-top:1.6rem">
     See the <a href="publications.html">full publication list &rarr;</a></p>
 </div></section>
 """
-page("research.html", "Research · King Group",
-     "The King group works to understand and design materials that are dynamic, "
-     "responsive, and can correct their own errors.", "Research", research)
+    page("research.html", f"Research · {SITE['brand']}", SITE['tagline'],
+         "Research", body)
 
 # ---------------------------------------------------------------- PUBLICATIONS
-ME = "King, E. M."
-def auth(s):
-    return s.replace(ME, f'<span class="me">{ME}</span>')
+def venue_html(v):
+    m = re.match(r"^(\D+?)\s*(\d.*)$", v)
+    if m:
+        return f'<span class="j">{esc(m.group(1).strip())}</span> {esc(m.group(2))}'
+    return f'<span class="j">{esc(v)}</span>'
 
-pubs = [
- (auth("King, E. M.*, Engel, M. C.*, Martin, C. S., Schoenholz, S. S., Manoharan, V. N., Brenner, M. P."),
-  "Inferring interaction potentials from stochastic particle trajectories",
-  '<span class="j">Physical Review Research</span> 7, 023075', "2025",
-  [("Journal","https://journals.aps.org/prresearch/abstract/10.1103/PhysRevResearch.7.023075")], True),
- (auth("King, E. M.*, Morrell, M. C.*, Sustiel, J. B., Gronert, M., Pastor, H., Grier, D. G."),
-  "Scattered waves fuel emergent activity",
-  '<span class="j">Physical Review Research</span> 7, 013055', "2025",
-  [("Journal","https://journals.aps.org/prresearch/abstract/10.1103/PhysRevResearch.7.013055")], False),
- (auth("Krueger, R. K.*, King, E. M.*, Brenner, M. P."),
-  "Tuning colloidal reactions",
-  '<span class="j">Physical Review Letters</span> 133, 228201', "2024",
-  [("Journal","https://journals.aps.org/prl/abstract/10.1103/PhysRevLett.133.228201")], True),
- (auth("King, E. M.*, Du, C. X.*, Zhu, Q. Z., Schoenholz, S. S., Brenner, M. P."),
-  "Programmable patchy particles for materials design",
-  '<span class="j">Proceedings of the National Academy of Sciences</span> 121, e2311891121', "2024",
-  [("Journal","https://www.pnas.org/doi/full/10.1073/pnas.2311891121")], False),
- (auth("Zhu, Q. Z., Du, C. X., King, E. M., Brenner, M. P."),
-  "Proofreading mechanism for colloidal self-assembly",
-  '<span class="j">Physical Review Research</span> 6, L042057', "2024",
-  [("Journal","https://journals.aps.org/prresearch/abstract/10.1103/PhysRevResearch.6.L042057")], False),
- (auth("Grier, D. G., King, E. M., Morrell, M. C."),
-  "Thunder and lightning: a revolution in wave-matter interactions",
-  '<span class="j">Preprint</span>', "2024",
-  []  , False),
- (auth("Kimchi, O., King, E. M., Brenner, M. P."),
-  "Uncovering the mechanism for aggregation in repeat expanded RNA reveals a reentrant transition",
-  '<span class="j">Nature Communications</span> 14, 332', "2023",
-  [("Journal","https://www.nature.com/articles/s41467-022-35803-3")], False),
- (auth("King, E. M.\u2020, Wang, W., Weitz, D. A., Spaepen, F., Brenner, M. P."),
-  "Correlation tracking: using simulations to interpolate highly correlated particle tracks",
-  '<span class="j">Physical Review E</span> 105, 044608', "2022",
-  [("Journal","https://journals.aps.org/pre/abstract/10.1103/PhysRevE.105.044608")], False),
- (auth("Goodrich, C. P.*, King, E. M.*, Schoenholz, S. S., Cubuk, E. D., Brenner, M. P."),
-  "Designing self-assembling kinetics with differentiable statistical physics models",
-  '<span class="j">Proceedings of the National Academy of Sciences</span> 118, e2024083118', "2021",
-  [("Journal","https://www.pnas.org/doi/abs/10.1073/pnas.2024083118")], False),
- (auth("King, E. M., Gebbie, M. A., Melosh, N. A."),
-  "Impact of rigidity on molecular self-assembly",
-  '<span class="j">Langmuir</span> 35, 16062-16069', "2019",
-  []  , False),
-]
-
-def pub_html(p):
-    authors, title, venue, year, links, ed = p
-    badges = ""
-    if ed:
-        badges += '<span class="badge ed">Editor\u2019s Suggestion</span>'
-    for label, url in links:
-        badges += f'<a class="badge link" href="{url}">{label} &rarr;</a>'
-    badge_block = f'<div class="badges">{badges}</div>' if badges else ""
-    if links:
-        title_el = f'<a class="pub-title" href="{links[0][1]}">{html.escape(title)}</a>'
-    else:
-        title_el = f'<p class="pub-title">{html.escape(title)}</p>'
-    return f"""    <li class="pub">
-      <div class="meta"><span class="y">{year}</span></div>
+def build_publications():
+    pubs = load_yaml("publications.yml")
+    rows = []
+    for p in pubs:
+        authors = esc(p["authors"]).replace("King, E. M.",
+                    '<span class="me">King, E. M.</span>')
+        link = p.get("link")
+        if link:
+            title_el = f'<a class="pub-title" href="{escurl(link)}">{esc(p["title"])}</a>'
+        else:
+            title_el = f'<p class="pub-title">{esc(p["title"])}</p>'
+        badges = ""
+        if p.get("editor_suggestion"):
+            badges += '<span class="badge ed">Editor\u2019s Suggestion</span>'
+        if link:
+            badges += f'<a class="badge link" href="{escurl(link)}">Journal &rarr;</a>'
+        badge_block = f'<div class="badges">{badges}</div>' if badges else ""
+        rows.append(f"""    <li class="pub">
+      <div class="meta"><span class="y">{esc(p['year'])}</span></div>
       <div>
         {title_el}
         <p class="authors">{authors}</p>
-        <p class="venue">{venue}</p>
+        <p class="venue">{venue_html(p['venue'])}</p>
         {badge_block}
       </div>
-    </li>"""
-
-pubs_html = "\n".join(pub_html(p) for p in pubs)
-publications = f"""
+    </li>""")
+    body = f"""
 <section class="page-head"><div class="wrap">
   <h1>Publications</h1>
   <div class="btn-row" style="margin-top:1.2rem">
-    <a class="btn ghost" href="{SCHOLAR}">Google Scholar <span class="arr">&rarr;</span></a>
+    <a class="btn ghost" href="{escurl(SITE['scholar'])}">Google Scholar <span class="arr">&rarr;</span></a>
   </div>
 </div></section>
 
 <section class="section tight"><div class="wrap">
   <ul class="pub-list">
-{pubs_html}
+{chr(10).join(rows)}
   </ul>
   <p class="legend">* co-first author&nbsp;&nbsp;&middot;&nbsp;&nbsp;&dagger; corresponding author</p>
 </div></section>
 """
-page("publications.html", "Publications · King Group",
-     "Publications and preprints from Ella King and the King Group.",
-     "Publications", publications)
+    page("publications.html", f"Publications · {SITE['brand']}",
+         "Publications and preprints from the King Group.", "Publications", body)
 
 # ---------------------------------------------------------------- PEOPLE
-people = f"""
-<section class="page-head"><div class="wrap">
-  <h1>People</h1>
-</div></section>
+def build_people():
+    data = load_yaml("people.yml")
+    pi = data["pi"]
+    links = "\n        ".join(
+        f'<a class="btn ghost" href="{escurl(l["url"])}">{esc(l["name"])}</a>'
+        for l in pi["links"])
+    members = []
+    for m in data.get("members", []):
+        if m.get("photo"):
+            av = f'<div class="av"><img src="{escurl(m["photo"])}" alt="{esc(m["name"])}" width="72" height="72"></div>'
+        else:
+            av = f'<div class="av">{esc(m["name"][0])}</div>'
+        email = (f'<a class="e" href="mailto:{esc(m["email"])}">{esc(m["email"])}</a>'
+                 if m.get("email") else "")
+        members.append(f"""    <div class="member">
+      {av}
+      <h3>{esc(m['name'])}</h3>
+      <p class="r">{esc(m['role'])}</p>
+      {email}
+    </div>""")
+    body = f"""
+<section class="page-head"><div class="wrap"><h1>People</h1></div></section>
 
 <section class="section tight"><div class="wrap">
   <div class="pi">
     <div class="pi-photo">
-      <img src="assets/img/ella-king.jpg" width="520" height="650"
-           alt="Ella King, Principal Investigator">
+      <img src="{escurl(pi['photo'])}" width="440" height="440" alt="{esc(pi['name'])}, Principal Investigator">
     </div>
     <div class="pi-body">
-      <p class="eyebrow">Principal Investigator</p>
-      <h2>Ella King</h2>
-      <p class="pi-role">
-        Assistant Professor of Chemical &amp; Biological Engineering<br>
-        Assistant Professor of Materials Science &amp; Engineering<br>
-        Affiliated with: Applied Physics Graduate Program, NITMB
-      </p>
+      <p class="eyebrow">{esc(pi['label'])}</p>
+      <h2>{esc(pi['name'])}</h2>
+      <p class="pi-depts">{departments_lines()}</p>
+      <p class="pi-affil">Affiliated with: {affiliations_html()}</p>
       <p class="pi-meta">
         <strong>Email:</strong>
-        <a href="mailto:ella.king@northwestern.edu">ella.king@northwestern.edu</a><br>
-        <strong>Address:</strong> 2145 Sheridan Rd, Evanston, IL 60208
+        <a href="mailto:{esc(SITE['email'])}">{esc(SITE['email'])}</a><br>
+        <strong>Address:</strong> {esc(SITE['address'])}
       </p>
       <div class="pi-links">
-        <a class="btn ghost" href="https://www.mccormick.northwestern.edu/research-faculty/directory/profiles/king-ella.html">Faculty profile</a>
-        <a class="btn ghost" href="https://ellaking.org/">Personal website</a>
-        <a class="btn ghost" href="{SCHOLAR}">Google Scholar</a>
-        <a class="btn ghost" href="assets/king-cv-2026.pdf">Curriculum vitae</a>
+        {links}
       </div>
     </div>
   </div>
@@ -329,101 +298,56 @@ people = f"""
 <section class="section"><div class="wrap">
   <div class="section-head"><h2>Graduate students</h2></div>
   <div class="members">
-    <div class="member">
-      <div class="av">K</div>
-      <h3>Katherine Ellis</h3>
-      <p class="r">Graduate Student in Chemical &amp; Biological Engineering</p>
-      <a class="e" href="mailto:KatherineEllis2030@u.northwestern.edu">KatherineEllis2030@u.northwestern.edu</a>
-    </div>
+{chr(10).join(members)}
   </div>
 </div></section>
 """
-page("people.html", "People · King Group",
-     "The King Group: principal investigator Ella King and group members at "
-     "Northwestern University.", "People", people)
+    page("people.html", f"People · {SITE['brand']}",
+         "The King Group at Northwestern University.", "People", body)
 
 # ---------------------------------------------------------------- NEWS
-news_items = [
-    ("Jan 20, 2026", "Welcome to the group, Kate Ellis!"),
-]
-news_html = "\n".join(
-    f'    <li><span class="d">{d}</span><span class="t">{html.escape(t)}</span></li>'
-    for d, t in news_items)
-
-talks_data = [
- ("Designing dynamic and non-equilibrium materials", "Center for Soft &amp; Living Matter, University of Pennsylvania, Philadelphia PA", "Invited Talk", "Mar 2026"),
- ("Controlling dynamic and non-equilibrium materials", "Institute for Fundamental Science, University of Oregon, Eugene OR", "Invited Talk", "Mar 2026"),
- ("Kinetic Proofreading", "Course in Molecular Biophysics, Calgary, Canada", "Guest Lecture", "Mar 2026"),
- ("Emergent Activity", "Levitated Matter Conference, Chicago IL", "Invited Talk", "Oct 2025"),
- ("Designing dynamic and non-equilibrium materials", "Frontiers in Applied &amp; Computational Mathematics, Newark NJ", "Invited Talk", "Jun 2025"),
- ("Emergent activity arises from wave scattering", "APS March Meeting, Anaheim CA", "Award Session Talk", "Mar 2025"),
- ("Designing dynamic and non-equilibrium materials", "APS March Meeting, Anaheim CA", "Invited Talk", "Mar 2025"),
- ("Inverse design of bio-inspired materials", "Statistical Mechanics and Molecular Simulation Seminar", "Invited Talk", "Oct 2024"),
- ("Designing bio-inspired properties in self-assembled materials", "University of Washington Distinguished Young Scholars Seminar", "Invited Talk", "Jul 2024"),
- ("Inverse design with differentiable patchy particles", "SIAM Mathematical Aspects of Materials Science", "Invited Talk", "May 2024"),
- ("Emergent activity in wave-mediated interactions", "University of Pennsylvania Soft Matter Theory Seminar, Philadelphia PA", "Invited Talk", "Apr 2024"),
- ("Inverse design of functional materials", "NYU Courant Modeling and Simulation Group Seminar, New York NY", "Talk", "Nov 2023"),
- ("Introduction to Automatic Differentiation", "Flatiron Center for Computational Biology, Inference Group, New York NY", "Talk", "Nov 2023"),
- ("Inferring interaction potentials from particle trajectories", "APS March Meeting, Las Vegas NV", "Award Session Talk", "Mar 2023"),
- ("An Introduction to End-to-End Differentiable Atomistic Simulations with JAX MD", "MRS Meeting, Boston MA", "Tutorial Instructor", "Nov 2022"),
-]
-talks_html = "\n".join(
-    f'    <li class="talk"><span><span class="tt">{t}</span><br>'
-    f'<span class="tv">{v}</span></span>'
-    f'<span class="tm"><span class="kind">{k}</span><br>{d}</span></li>'
-    for t, v, k, d in talks_data)
-
-news = f"""
-<section class="page-head"><div class="wrap">
-  <h1>News</h1>
-</div></section>
+def build_news():
+    news = load_yaml("news.yml")
+    items = "\n".join(
+        f'    <li><span class="d">{esc(n["date"])}</span><span class="t">{esc(n["text"])}</span></li>'
+        for n in news)
+    body = f"""
+<section class="page-head"><div class="wrap"><h1>News</h1></div></section>
 
 <section class="section tight"><div class="wrap">
   <ul class="news">
-{news_html}
-  </ul>
-</div></section>
-
-<section class="section"><div class="wrap">
-  <div class="section-head"><h2>Selected presentations</h2></div>
-  <ul class="talks">
-{talks_html}
+{items}
   </ul>
 </div></section>
 """
-page("news.html", "News · King Group",
-     "News and selected presentations from the King Group at Northwestern University.",
-     "News", news)
+    page("news.html", f"News · {SITE['brand']}",
+         "News from the King Group at Northwestern University.", "News", body)
 
 # ---------------------------------------------------------------- JOIN
-join = """
-<section class="page-head"><div class="wrap">
-  <h1>Join us</h1>
-</div></section>
+def build_join():
+    meta, prose = load_md("join.md")
+    progs = "\n".join(
+        f'    <a class="prog" href="{escurl(p["url"])}"><span class="pn">{esc(p["name"])}</span><span class="arr">&rarr;</span></a>'
+        for p in SITE["programs"])
+    body = f"""
+<section class="page-head"><div class="wrap"><h1>{esc(meta['title'])}</h1></div></section>
 
 <section class="section tight"><div class="wrap">
-  <div class="prose">
-    <p>Current Northwestern students and prospective postdoc candidates are welcome
-       to <a href="mailto:ella.king@northwestern.edu">email Ella</a>! Prospective
-       graduate students are encouraged to apply to one of the PhD programs our group
-       is affiliated with
-       (<a href="https://www.mccormick.northwestern.edu/chemical-biological/academics/graduate/chemical-biological-engineering-phd/">Chemical and Biological Engineering</a>,
-       <a href="https://www.mccormick.northwestern.edu/materials-science/academics/graduate/phd/">Materials Science and Engineering</a>,
-       or <a href="https://appliedphysics.northwestern.edu/">Applied Physics</a>).</p>
+  <div class="prose">{prose}</div>
+  <div class="join-grid">
+{progs}
   </div>
   <div class="btn-row" style="margin-top:1.6rem">
-    <a class="btn" href="mailto:ella.king@northwestern.edu">Email Ella <span class="arr">&rarr;</span></a>
+    <a class="btn" href="mailto:{esc(SITE['email'])}">Email Ella <span class="arr">&rarr;</span></a>
   </div>
 </div></section>
 """
-page("join.html", "Join Us · King Group",
-     "Join the King Group at Northwestern. Information for prospective graduate "
-     "students and postdocs.", "Join", join)
-
-print("Built:", ", ".join(f for f, _ in PAGES))
+    page("join.html", f"Join Us · {SITE['brand']}",
+         "Join the King Group at Northwestern.", "Join", body)
 
 # ---------------------------------------------------------------- 404
-four04 = """<!DOCTYPE html>
+def build_404():
+    four = """<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
@@ -435,10 +359,9 @@ four04 = """<!DOCTYPE html>
 <style>
   .nf{min-height:70vh;display:flex;flex-direction:column;justify-content:center;
       align-items:flex-start;max-width:var(--maxw);margin:0 auto;padding:0 var(--gut)}
-  .nf .code{font-family:var(--f-mono);font-size:.8rem;letter-spacing:.18em;
-      text-transform:uppercase;color:var(--teal-deep)}
+  .nf .code{font-family:var(--f-mono);font-size:.8rem;letter-spacing:.18em;color:var(--teal-deep)}
   .nf h1{font-family:var(--f-display);font-size:clamp(2.4rem,6vw,4rem);
-      font-weight:500;letter-spacing:-.02em;margin:.8rem 0 1rem}
+      font-weight:500;letter-spacing:-.02em;margin:.6rem 0 1rem}
   .nf p{max-width:48ch;color:var(--ink-soft);font-size:1.1rem}
   .nf .links{display:flex;flex-wrap:wrap;gap:1.4rem;margin-top:1.8rem;
       font-family:var(--f-mono);font-size:.9rem}
@@ -453,15 +376,29 @@ four04 = """<!DOCTYPE html>
   <h1>Page not found</h1>
   <p>This page may have moved, or the link may be broken.</p>
   <div class="links">
-    <a href="/">Home</a>
-    <a href="/research.html">Research</a>
-    <a href="/publications.html">Publications</a>
-    <a href="/people.html">People</a>
+    <a href="/">Home</a><a href="/research.html">Research</a>
+    <a href="/publications.html">Publications</a><a href="/people.html">People</a>
     <a href="/join.html">Join</a>
   </div>
 </main>
 </body>
 </html>"""
-with open(os.path.join(OUT, "404.html"), "w") as fh:
-    fh.write(four04)
-print("Built: 404.html")
+    with open(os.path.join(OUT, "404.html"), "w") as fh:
+        fh.write(four)
+
+# ---------------------------------------------------------------- BUILD
+def main():
+    if os.path.exists(OUT):
+        shutil.rmtree(OUT)
+    os.makedirs(OUT)
+    shutil.copytree(ASSETS, os.path.join(OUT, "assets"))
+    for f in (".nojekyll", "favicon.ico"):
+        src = os.path.join(ROOT, f)
+        if os.path.exists(src):
+            shutil.copy(src, os.path.join(OUT, f))
+    build_home(); build_research(); build_publications()
+    build_people(); build_news(); build_join(); build_404()
+    print("Built site into public/:", ", ".join(f for f, _ in PAGES), "+ 404.html")
+
+if __name__ == "__main__":
+    main()

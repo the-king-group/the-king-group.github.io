@@ -1,0 +1,42 @@
+# ── Global site settings ────────────────────────────────────────────
+# Edit these and the whole site updates. See UPDATING.md for help.
+
+brand: King Group
+institution: Northwestern University
+headline: Error-correcting materials
+
+# One-sentence description used on the homepage and in the footer.
+tagline: >
+  The King group works to understand and design materials that are dynamic,
+  responsive, and can correct their own errors. We emphasize both fundamental
+  science and applications to biology and sustainability.
+
+# Section + button labels on the homepage
+work_heading: What we work on
+callout: Come join us!
+
+# Contact
+email: ella.king@northwestern.edu
+address: 2145 Sheridan Rd, Evanston, IL 60208
+faculty_profile: https://www.mccormick.northwestern.edu/research-faculty/directory/profiles/king-ella.html
+personal_site: https://ellaking.org/
+scholar: https://scholar.google.com/citations?user=tMOOznMAAAAJ&hl=en
+
+# Departments (shown prominently) and affiliations. Any affiliation with a
+# url is rendered as a link.
+departments:
+  - Chemical & Biological Engineering
+  - Materials Science & Engineering
+affiliations:
+  - text: Applied Physics Graduate Program
+  - text: NITMB
+    url: https://www.nitmb.org/
+
+# PhD programs linked on the Join page
+programs:
+  - name: Chemical and Biological Engineering
+    url: https://www.mccormick.northwestern.edu/chemical-biological/academics/graduate/chemical-biological-engineering-phd/
+  - name: Materials Science and Engineering
+    url: https://www.mccormick.northwestern.edu/materials-science/academics/graduate/phd/
+  - name: Applied Physics
+    url: https://appliedphysics.northwestern.edu/

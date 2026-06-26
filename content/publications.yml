@@ -1,0 +1,62 @@
+# Newest first. Mark co-first authors with * and corresponding with the dagger
+# character after the name. Set editor_suggestion: true for an Editor's
+# Suggestion badge. Omit "link" if there is no online version yet.
+- authors: "King, E. M.*, Engel, M. C.*, Martin, C. S., Schoenholz, S. S., Manoharan, V. N., Brenner, M. P."
+  title: Inferring interaction potentials from stochastic particle trajectories
+  venue: Physical Review Research 7, 023075
+  year: 2025
+  editor_suggestion: true
+  link: https://journals.aps.org/prresearch/abstract/10.1103/PhysRevResearch.7.023075
+
+- authors: "King, E. M.*, Morrell, M. C.*, Sustiel, J. B., Gronert, M., Pastor, H., Grier, D. G."
+  title: Scattered waves fuel emergent activity
+  venue: Physical Review Research 7, 013055
+  year: 2025
+  link: https://journals.aps.org/prresearch/abstract/10.1103/PhysRevResearch.7.013055
+
+- authors: "Krueger, R. K.*, King, E. M.*, Brenner, M. P."
+  title: Tuning colloidal reactions
+  venue: Physical Review Letters 133, 228201
+  year: 2024
+  editor_suggestion: true
+  link: https://journals.aps.org/prl/abstract/10.1103/PhysRevLett.133.228201
+
+- authors: "King, E. M.*, Du, C. X.*, Zhu, Q. Z., Schoenholz, S. S., Brenner, M. P."
+  title: Programmable patchy particles for materials design
+  venue: Proceedings of the National Academy of Sciences 121, e2311891121
+  year: 2024
+  link: https://www.pnas.org/doi/full/10.1073/pnas.2311891121
+
+- authors: "Zhu, Q. Z., Du, C. X., King, E. M., Brenner, M. P."
+  title: Proofreading mechanism for colloidal self-assembly
+  venue: Physical Review Research 6, L042057
+  year: 2024
+  link: https://journals.aps.org/prresearch/abstract/10.1103/PhysRevResearch.6.L042057
+
+- authors: "Grier, D. G., King, E. M., Morrell, M. C."
+  title: "Thunder and lightning: a revolution in wave-matter interactions"
+  venue: Preprint
+  year: 2024
+
+- authors: "Kimchi, O., King, E. M., Brenner, M. P."
+  title: Uncovering the mechanism for aggregation in repeat expanded RNA reveals a reentrant transition
+  venue: Nature Communications 14, 332
+  year: 2023
+  link: https://www.nature.com/articles/s41467-022-35803-3
+
+- authors: "King, E. M.†, Wang, W., Weitz, D. A., Spaepen, F., Brenner, M. P."
+  title: "Correlation tracking: using simulations to interpolate highly correlated particle tracks"
+  venue: Physical Review E 105, 044608
+  year: 2022
+  link: https://journals.aps.org/pre/abstract/10.1103/PhysRevE.105.044608
+
+- authors: "Goodrich, C. P.*, King, E. M.*, Schoenholz, S. S., Cubuk, E. D., Brenner, M. P."
+  title: Designing self-assembling kinetics with differentiable statistical physics models
+  venue: Proceedings of the National Academy of Sciences 118, e2024083118
+  year: 2021
+  link: https://www.pnas.org/doi/abs/10.1073/pnas.2024083118
+
+- authors: "King, E. M., Gebbie, M. A., Melosh, N. A."
+  title: Impact of rigidity on molecular self-assembly
+  venue: Langmuir 35, 16062-16069
+  year: 2019

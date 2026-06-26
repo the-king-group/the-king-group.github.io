@@ -1,0 +1,32 @@
+# Recent publications featured on the Research page (with short descriptions).
+- title: Programmable patchy particles for materials design
+  url: https://www.pnas.org/doi/full/10.1073/pnas.2311891121
+  desc: >
+    Computational design of anisotropic particle shapes that stabilize complex
+    open lattices and enable self-limited assembly using automatic differentiation.
+
+- title: Tuning colloidal reactions
+  url: https://journals.aps.org/prl/abstract/10.1103/PhysRevLett.133.228201
+  desc: >
+    Control over complex colloidal reactions with inverse designed components.
+    Controlled disassembly of virus-like shells and, inspired by drug delivery
+    applications, induced release of small particles trapped inside.
+
+- title: Inferring interaction potentials from stochastic particle trajectories
+  url: https://journals.aps.org/prresearch/abstract/10.1103/PhysRevResearch.7.023075
+  desc: >
+    Novel method for extracting interactions from particle trajectories in and out
+    of equilibrium. Validated on experimental colloidal data interacting via
+    depletion forces.
+
+- title: Scattered waves fuel emergent activity
+  url: https://journals.aps.org/prresearch/abstract/10.1103/PhysRevResearch.7.013055
+  desc: >
+    Nonreciprocal wave-mediated interactions reveal a new form of activity that
+    emerges as a collective property of the system.
+
+- title: Designing self-assembling kinetics with differentiable statistical physics models
+  url: https://www.pnas.org/doi/abs/10.1073/pnas.2024083118
+  desc: >
+    Inverse design of kinetic properties of self-assembled structures, including
+    transition rates between small clusters and bulk crystallization rates.
