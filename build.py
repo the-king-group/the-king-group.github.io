@@ -142,6 +142,7 @@ def page(fname, title, desc, active, body):
 
 # ---------------------------------------------------------------- HOME
 def build_home():
+    pi_name = load_yaml("people.yml")["pi"]["name"]
     body = f"""
 <section class="hero"><div class="wrap"><div class="hero-grid">
   <div class="hero-copy">
@@ -152,6 +153,7 @@ def build_home():
       <a class="btn" href="research.html">Research <span class="arr">&rarr;</span></a>
       <a class="btn ghost" href="join.html">Join us</a>
     </div>
+    <p class="hero-pi">Principal Investigator: <a href="{escurl(SITE['personal_site'])}">{esc(pi_name)}</a></p>
     <p class="hero-depts">{departments_links_inline()}</p>
     <p class="affil">Affiliated with: {affiliations_html()}</p>
   </div>
