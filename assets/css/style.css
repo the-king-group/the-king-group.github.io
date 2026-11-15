@@ -339,6 +339,5 @@ a.badge.link:hover{border-color:var(--violet);color:var(--violet)}
     transition-duration:.001ms !important}
 }
 .pi-photo a{display:block}
-.hero-pi{font-size:1.05rem;color:var(--ink-soft);margin:1.7rem 0 0}
+.hero-pi{font-size:1.05rem;color:var(--ink-soft);margin:0 0 .9rem}
 .hero-pi a{color:var(--nu-purple);font-weight:600}
-.hero-pi + .hero-depts{margin-top:.45rem}

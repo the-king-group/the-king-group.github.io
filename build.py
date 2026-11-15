@@ -148,12 +148,12 @@ def build_home():
   <div class="hero-copy">
     <p class="eyebrow">{esc(SITE['brand'])} &middot; {esc(SITE['institution'])}</p>
     <h1>{esc(SITE['headline'])}</h1>
+    <p class="hero-pi">Principal Investigator: <a href="{escurl(SITE['personal_site'])}">{esc(pi_name)}</a></p>
     <p class="lead">{esc(SITE['tagline'])}</p>
     <div class="btn-row">
       <a class="btn" href="research.html">Research <span class="arr">&rarr;</span></a>
       <a class="btn ghost" href="join.html">Join us</a>
     </div>
-    <p class="hero-pi">Principal Investigator: <a href="{escurl(SITE['personal_site'])}">{esc(pi_name)}</a></p>
     <p class="hero-depts">{departments_links_inline()}</p>
     <p class="affil">Affiliated with: {affiliations_html()}</p>
   </div>
