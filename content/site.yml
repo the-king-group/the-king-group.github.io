@@ -14,6 +14,8 @@ tagline: >
 # Contact
 email: ella.king@northwestern.edu
 address: 2145 Sheridan Rd, Evanston, IL 60208
+# Address with the office number, shown on the People page.
+office_address: 2145 Sheridan Rd, E154, Evanston, IL 60208
 faculty_profile: https://www.mccormick.northwestern.edu/research-faculty/directory/profiles/king-ella.html
 personal_site: https://ellaking.org/
 scholar: https://scholar.google.com/citations?user=tMOOznMAAAAJ&hl=en
@@ -40,9 +42,23 @@ programs:
     url: https://appliedphysics.northwestern.edu/
 
 # ── Publications auto-sync (Google Scholar via SerpApi) ──────────────
-# The GitHub Action uses this Scholar author id to refresh the
-# publication list. See UPDATING.md for the one-time key setup.
+# The GitHub Action uses this Scholar author id to add new papers to
+# content/publications.yml every week. See UPDATING.md for the one-time
+# key setup.
 scholar_id: tMOOznMAAAAJ
+# Scholar entries whose venue contains any of these are skipped. These are
+# the meeting abstracts that APS and AIChE push to Scholar; only papers and
+# preprints are added.
+scholar_exclude_venues:
+  - AIChE Annual Meeting
+  - APS Global Physics Summit
+  - APS March Meeting
+  - Meeting Abstracts
+  - Bulletin of the American Physical Society
+# Other Scholar entries to never add (theses, duplicates, errata). Titles only.
+scholar_exclude:
+  - "Frankenstein's Tiniest Monsters: Inverse Design of Bio-Inspired Function in Self-Assembling Materials"
+  - Scientific uses of automatic differentiation
 recent_count: 4          # how many recent papers show on the Research page
 # Names to bold in author lists (covers both Scholar's "EM King" style
 # and the hand-written "King, E. M." style).

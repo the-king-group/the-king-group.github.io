@@ -18,25 +18,23 @@ Images live in `assets/img/`.
 
 ## Publications - automatic from Google Scholar
 
-The publication list and the "Recent publications" box on the Research page are
-kept up to date automatically from your Google Scholar profile. You don't have to
-touch `publications.yml`.
+Every Monday (and on every push) a GitHub Action checks your Google Scholar
+profile and adds any paper or preprint that isn't in
+`content/publications.yml` yet to the top of that file, then rebuilds and
+publishes the site. Existing entries are never touched, so co-first-author
+marks, Editor's Suggestion badges and journal links are safe. The "Recent
+publications" box on the Research page follows the same list.
 
 **One-time setup** (about two minutes):
 1. Create a free key at <https://serpapi.com/> (sign up, then copy your API key).
 2. In this repo: **Settings → Secrets and variables → Actions → New repository
    secret**. Name it `SERPAPI_KEY`, paste the key, save.
 
-That's it. Every Monday (and on every push) a GitHub Action pulls your latest
-Scholar publications, rebuilds the site, and publishes it. Until you add the key,
-the site simply keeps the current list - nothing breaks.
+Until you add the key, the site simply keeps the current list - nothing breaks.
 
-- The number of papers shown on the Research page is `recent_count:` in
-  `content/site.yml` (currently 4).
-- Your Scholar profile is set by `scholar_id:` in `content/site.yml`.
-- **Prefer to manage the list by hand instead?** Delete the "Sync publications"
-  step in `.github/workflows/deploy.yml`, then edit `content/publications.yml`
-  directly. Each entry looks like:
+- Scholar gives abbreviated authors ("EM King, …") and links to its own page.
+  A new paper shows up that way first; tidy the entry in `publications.yml`
+  whenever you like:
   ```yaml
   - authors: "King, E. M.*, Coauthor, A. B."
     title: The title of the paper
@@ -47,6 +45,17 @@ the site simply keeps the current list - nothing breaks.
   ```
   (`*` marks co-first authors, `†` corresponding; your name is bolded
   automatically.)
+- Meeting abstracts (APS, AIChE) are skipped automatically, by venue; the list
+  is `scholar_exclude_venues:` in `content/site.yml`.
+- To keep anything else on Scholar off the site (a thesis, a duplicate), add
+  its title to `scholar_exclude:` in `content/site.yml`. Deleting it from
+  `publications.yml` alone isn't enough; it would be added back.
+- To run the sync right now: **Actions → Update site → Run workflow**.
+- The number of papers shown on the Research page is `recent_count:` in
+  `content/site.yml` (currently 4).
+
+**Don't edit the `.html` files directly.** They are rebuilt from `content/`
+on every run, so a change made only in the HTML is lost.
 
 ## Common tasks
 

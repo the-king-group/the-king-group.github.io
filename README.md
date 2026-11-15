@@ -7,11 +7,8 @@ Static website for the King Group, Northwestern University. Content lives in
 - `assets/` - CSS, JS, images, CV
 - `build.py` - regenerates the pages at the repo root
 - `*.html` - generated pages (rebuilt by `build.py`)
-- `.github/workflows/deploy.yml` - builds and deploys to GitHub Pages on push
-
-## Deploying
-This repo deploys via GitHub Actions. One-time setup: **Settings → Pages → Build
-and deployment → Source: "GitHub Actions"**. After that, every push to `main`
-rebuilds and publishes the site.
+- `scholar_sync.py` - adds new papers from Google Scholar
+- `.github/workflows/update.yml` - syncs, rebuilds and commits every Monday
+  and on every push; GitHub Pages then publishes the result
 
 To edit the site, see **`UPDATING.md`**.

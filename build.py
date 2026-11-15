@@ -133,7 +133,8 @@ def footer():
 </div></footer>
 <script src="assets/js/site.js"></script>
 </body>
-</html>"""
+</html>
+"""
 
 def page(fname, title, desc, active, body):
     with open(os.path.join(OUT, fname), "w") as fh:
@@ -293,7 +294,7 @@ def build_people():
       <p class="pi-meta">
         <strong>Email:</strong>
         <a href="mailto:{esc(SITE['email'])}">{esc(SITE['email'])}</a><br>
-        <strong>Address:</strong> {esc(SITE['address'])}
+        <strong>Address:</strong> {esc(SITE.get('office_address', SITE['address']))}
       </p>
       <div class="pi-links">
         {links}

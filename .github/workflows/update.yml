@@ -1,0 +1,48 @@
+# Keeps the site up to date without anyone running anything:
+#   1. pulls new papers from Google Scholar into content/publications.yml
+#   2. rebuilds the .html pages from content/
+#   3. commits the result, which GitHub Pages then publishes
+# Runs every Monday, on every push to main, and on demand (Actions tab →
+# "Update site" → Run workflow). One-time setup is in UPDATING.md.
+name: Update site
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: "0 12 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update-site
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install pyyaml markdown
+      - name: Sync publications from Google Scholar
+        env:
+          SERPAPI_KEY: ${{ secrets.SERPAPI_KEY }}
+        run: python scholar_sync.py
+      - name: Build pages
+        run: python build.py
+      - name: Commit changes
+        run: |
+          git add -A
+          if git diff --cached --quiet; then
+            echo "Nothing changed."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "Update site (automatic)"
+          git push
