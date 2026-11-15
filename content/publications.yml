@@ -4,12 +4,6 @@
 # with * and corresponding with the dagger character after the name. Set
 # editor_suggestion: true for an Editor's Suggestion badge. Omit "link" if
 # there is no online version yet.
-- authors: "Gronert, M. K., Cao, B., King, E. M., Grier, D. G."
-  title: Emergent activity powers a path to chaos for pairs of acoustically trapped spheres
-  venue: arXiv preprint arXiv:2609.37946
-  year: 2026
-  link: https://arxiv.org/abs/2609.37946
-
 - authors: "King, E. M.*, Engel, M. C.*, Martin, C. S., Schoenholz, S. S., Manoharan, V. N., Brenner, M. P."
   title: Inferring interaction potentials from stochastic particle trajectories
   venue: Physical Review Research 7, 023075
