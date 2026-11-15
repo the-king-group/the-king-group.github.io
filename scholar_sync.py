@@ -62,7 +62,11 @@ def new_entries(articles, existing_titles, exclude=(), exclude_venues=DEFAULT_EX
         if venue:
             entry["venue"] = venue
         entry["year"] = year_of(a) or ""
-        if a.get("link"):
+        # Link preprints straight to arXiv; otherwise use Scholar's page.
+        arxiv = re.search(r"arXiv:(\d{4}\.\d{4,5})", venue)
+        if arxiv:
+            entry["link"] = "https://arxiv.org/abs/" + arxiv.group(1)
+        elif a.get("link"):
             entry["link"] = a["link"]
         out.append(entry)
     return out
