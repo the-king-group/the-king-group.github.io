@@ -338,3 +338,4 @@ a.badge.link:hover{border-color:var(--violet);color:var(--violet)}
   *{animation-duration:.001ms !important;animation-iteration-count:1 !important;
     transition-duration:.001ms !important}
 }
+.pi-photo a{display:block}

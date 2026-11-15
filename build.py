@@ -284,7 +284,7 @@ def build_people():
 <section class="section tight"><div class="wrap">
   <div class="pi">
     <div class="pi-photo">
-      <img src="{escurl(pi['photo'])}" width="440" height="440" alt="{esc(pi['name'])}, Principal Investigator">
+      <a href="{escurl(SITE['personal_site'])}"><img src="{escurl(pi['photo'])}" width="440" height="440" alt="{esc(pi['name'])}, Principal Investigator"></a>
     </div>
     <div class="pi-body">
       <p class="eyebrow">{esc(pi['label'])}</p>
